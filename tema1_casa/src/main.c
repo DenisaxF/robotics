@@ -13,13 +13,12 @@
 
 int ultimaStare = 0;
 int stareCurenta;
-unsigned long pressed_time=0;
+unsigned long pressed_time = 0;
 bool stopProces = false;
 bool startApasat = false;
 bool intrerupt = false;
 
-void setup()
-{
+void setup() {
   pinMode(red, OUTPUT);
   pinMode(blue, OUTPUT);
   pinMode(green, OUTPUT);
@@ -33,63 +32,84 @@ void setup()
   pinMode(buttonStart, INPUT_PULLUP);
 }
 
-void clipire(int pin)
-{
-  for(int i = 0; i < 4; i++)
-  {
-    digitalWrite(pin, !digitalRead(pin));
-    delay(1000);
+void delayWithStopCheck(unsigned long time) {
+  unsigned long start = millis();
+  while (millis() - start < time) {
+    stareCurenta = digitalRead(buttonStop);
+    if (stareCurenta == LOW && ultimaStare == HIGH) {
+      pressed_time = millis();
+      stopProces = false;
+    }
+    if (startApasat && stareCurenta == LOW && (millis() - pressed_time > apasatLung) && !stopProces) {
+      intrerupt = true;  // Procesul este întrerupt
+      return;
+    }
+    ultimaStare = stareCurenta;
   }
-
-  digitalWrite(pin, HIGH);
-  
 }
 
-void clipire_toate()
-{
-  for(int i = 0; i < 6; i++)
-  {
+void clipire(int pin) {
+  for (int i = 0; i <= 3; i++) {
+    if (intrerupt) return;  
+    digitalWrite(pin, !digitalRead(pin));
+    delayWithStopCheck(1000); 
+  }
+  digitalWrite(pin, HIGH);
+}
+
+void clipire_toate() {
+  for (int i = 0; i < 6 && !intrerupt; i++) {
+    if (intrerupt) return; 
     digitalWrite(LED1, !digitalRead(LED1));
     digitalWrite(LED2, !digitalRead(LED2));
     digitalWrite(LED3, !digitalRead(LED3));
     digitalWrite(LED4, !digitalRead(LED4));
-    delay(1000);
+    delayWithStopCheck(500);  
   }
-
   digitalWrite(LED1, LOW);
   digitalWrite(LED2, LOW);
   digitalWrite(LED3, LOW);
   digitalWrite(LED4, LOW);
 }
 
-void loop()
-{
-  if(digitalRead(buttonStart)==LOW && !intrerupt)
-  {
+void loop() {
+  intrerupt = false; 
+  if (digitalRead(buttonStart) == LOW && !intrerupt) {
     startApasat = true;
     digitalWrite(red, HIGH);
+
     clipire(LED1);
+    if (intrerupt) return; 
+
     clipire(LED2);
+    if (intrerupt) return;
+
     clipire(LED3);
+    if (intrerupt) return;
+
     clipire(LED4);
+    if (intrerupt) return;
+
     clipire_toate();
+    if (intrerupt) return;
 
+    
     digitalWrite(red, LOW);
-    digitalWrite(green, HIGH);
+    digitalWrite(green, HIGH); 
   }
-  stareCurenta = digitalRead(buttonStop);
 
-  if(stareCurenta == LOW && ultimaStare == HIGH)
-  {
-    pressed_time = millis();
+  
+  stareCurenta = digitalRead(buttonStop);
+  if (stareCurenta == LOW && ultimaStare == HIGH) {
+    pressed_time = millis();  
     stopProces = false;
   }
 
-  if(startApasat && stareCurenta == LOW && (millis()-pressed_time > apasatLung) && !stopProces)
-  {
-    intrerupt = true;
+  if (startApasat && stareCurenta == LOW && (millis() - pressed_time > apasatLung) && !stopProces) {
+    intrerupt = true; 
     clipire_toate();
-    digitalWrite(green, HIGH);
+    digitalWrite(red, LOW);
+    digitalWrite(green, HIGH);  
     stopProces = true;
   }
 
