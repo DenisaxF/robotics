@@ -33,3 +33,7 @@ Dacă oricând de la pornirea încărcării până la finalizarea acesteia este 
 https://github.com/user-attachments/assets/c5b3c788-0c55-4887-985c-1970dffb8fcf
 
 
+https://github.com/user-attachments/assets/0370c9f6-6136-4b37-a6c9-76855b1c7348
+
+
+
